@@ -1,44 +1,203 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Iniciando front-end web - GoBarber
+## Configurando Estrutura
+Adicionar as devDependencies e as configurações de eslint, prettier e typescript do projeto ReactJS anterior. Deletar os arquivos desnecessários.
 
-## Available Scripts
+## Estilos globais
+Adicionar o `styled-components`. Criar o arquivo `src/styles/global.ts`
+```ts
+import { createGlobalStyle } from 'styled-components';
 
-In the project directory, you can run:
+export default createGlobalStyle`
+  * {
+    margin: 0;
+    padding: 0;
+    outline: none;
+    box-sizing: border-box;
+  }
 
-### `yarn start`
+  body {
+    background: #312e38;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  body, input, button {
+    font-family: 'Roboto Slab', serif;
+    font-size: 16px;
+  }
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+  h1, h2, h3, h4, h5, h6, strong {
+    font-weight: 500;
+  }
 
-### `yarn test`
+  button {
+    cursor: pointer;
+  }
+`;
+```
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+No arquivo `src/App.tsx`, importar o `GlobalStyle`
+```tsx
+import React from 'react';
 
-### `yarn build`
+import GlobalStyle from './styles/global';
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+const App: React.FC = () => {
+  return (
+    <>
+      <h1>Hello World</h1>
+      <GlobalStyle />
+    </>
+  );
+};
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+export default App;
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Página de login
+Importar pacote de icons
+```bash
+yarn add react-icons
+```
+`src/pages/SignIn/index.tsx`
+```tsx
+import React from 'react';
+import { FiLogIn } from 'react-icons/fi';
+import logoImg from '../../assets/logo.svg';
 
-### `yarn eject`
+import { Container, Content, Background } from './styles';
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+const SignIn: React.FC = () => (
+  <Container>
+    <Content>
+      <img src={logoImg} alt="GoBarber" />
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+      <form action="submit">
+        <h1>Faça seu logon</h1>
+        <input placeholder="E-mail" />
+        <input type="password" placeholder="Senha" />
+        <button type="submit">Entrar</button>
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+        <a href="forgot">Esqueci minha senha</a>
+      </form>
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+      <a href="criar">
+        <FiLogIn />
+        Criar conta
+      </a>
+    </Content>
+    <Background />
+  </Container>
+);
 
-## Learn More
+export default SignIn;
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Importar pacote polished
+```bash
+yarn add polished
+```
+`src/pages/SignIn/styles.ts``
+```ts
+import styled from 'styled-components';
+import { shade } from 'polished';
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+import SignInBackground from '../../assets/sign-in-background.png';
+
+export const Container = styled.div`
+  height: 100vh;
+  display: flex;
+  align-items: stretch;
+`;
+
+export const Content = styled.div`
+  display: flex;
+  flex-direction: column;
+  place-content: center;
+  align-items: center;
+
+  width: 100%;
+  max-width: 700px;
+
+  form {
+    margin: 80px 0;
+    width: 340px;
+    text-align: center;
+
+    h1 {
+      margin-bottom: 24px;
+    }
+
+    input {
+      background: #232129;
+      border-radius: 10px;
+      border: 2px solid #232129;
+      padding: 16px;
+      width: 100%;
+      color: #f4ede8;
+
+      &::placeholder {
+        color: #666360;
+      }
+
+      & + input {
+        margin-top: 8px;
+      }
+    }
+
+    button {
+      background: #ff9000;
+      height: 56px;
+      border-radius: 10px;
+      border: 0;
+      padding: 0 16px;
+      color: #312e38;
+      width: 100%;
+      font-weight: 500;
+      margin-top: 16px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: ${shade(0.2, '#ff9000')};
+      }
+    }
+
+    a {
+      color: #f4ede8;
+      display: block;
+      margin-top: 24px;
+      text-decoration: none;
+      transition: color 0.2s;
+
+      &:hover {
+        color: ${shade(0.2, '#f4ede8')};
+      }
+    }
+  }
+
+  > a {
+    color: #ff9000;
+    display: block;
+    margin-top: 24px;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    display: flex;
+    align-items: center;
+
+    svg {
+      margin-right: 16px;
+    }
+
+    &:hover {
+      color: ${shade(0.2, '#ff9000')};
+    }
+  }
+`;
+
+export const Background = styled.div`
+  flex: 1;
+  background: url(${SignInBackground}) no-repeat center;
+  background-size: cover;
+`;
+```
