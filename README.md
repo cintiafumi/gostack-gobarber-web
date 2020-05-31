@@ -354,3 +354,6 @@ const SignIn: React.FC = () => (
 
 export default SignIn;
 ```
+
+## Página de cadastro
+Para a página de `SignUp`, copiamos tudo da página `SignIn` e fizemos as alterações necessárias.
