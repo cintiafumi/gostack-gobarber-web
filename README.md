@@ -357,3 +357,157 @@ export default SignIn;
 
 ## Página de cadastro
 Para a página de `SignUp`, copiamos tudo da página `SignIn` e fizemos as alterações necessárias.
+
+
+## Utilizando Unform
+Para cada input estávamos usando um estado. E toda vez que o estado era alterado, o componente atualiza.
+Instalar os pacotes
+```bash
+yarn add @unform/core @unform/web
+```
+
+Importar o `Form` dessa biblioteca
+```tsx
+import { Form } from '@unform/web';
+
+<Form onSubmit={handleSubmit}>
+  <h1>Faça seu cadastro</h1>
+  <Input name="name" icon={FiUser} placeholder="Nome" />
+  <Input name="email" icon={FiMail} placeholder="E-mail" />
+  <Input
+    name="password"
+    icon={FiLock}
+    type="password"
+    placeholder="Senha"
+  />
+  <Button type="submit">Cadastrar</Button>
+</Form>
+```
+
+E substituir `<form>` por `Form`. Além disso, precisamos informar quais campos do formulário serão monitorados/registrados nesse form quando der o submit. Para isso, fazemos a alteração do componente de `Input`. O `useField` é um hook disponível que recebe como parâmetro o nome do campo, e retorna várias propriedades (fieldName, defaultName, error, registerField). Assim que o componente for exibido em tela, vou chamar a função `registerField`, por isso, precisamos do `useEffect`.
+
+A primeira propriedade que o `registerField` recebe é o `name` que usamos o `fieldName` para não alterar, e o `ref` que vai referenciar o input de maneira direta (sem ter que acessar state) e usamo o `useRef` para isso. Agora conseguimos acessar o `inputRef` diretamente da DOM. O input fica dentro de `Input.current` (padrão do React). O `path` é onde o unform vai buscar o valor dentro dessa referência, que nesse caso é o `'value'`.
+```tsx
+import React, { InputHTMLAttributes, useEffect, useRef } from 'react';
+import { IconBaseProps } from 'react-icons';
+import { useField } from '@unform/core';
+
+import { Container } from './styles';
+
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  name: string;
+  icon?: React.ComponentType<IconBaseProps>;
+}
+
+const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
+  const { fieldName, defaultValue, error, registerField } = useField(name);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    registerField({
+      name: fieldName,
+      ref: inputRef.current,
+      path: 'value',
+    });
+  }, [fieldName, registerField]);
+
+  return (
+    <Container>
+      {Icon && <Icon size={20} />}
+      <input ref={inputRef} {...rest} />
+    </Container>
+  );
+};
+
+export default Input;
+```
+
+Para adicionar um `defaultValue` no input, o `Form` recebe um `initialData` onde é passado um objeto com a nome do input e o valor default para já vir autocompletado
+```tsx
+  <Form initialData={{ name: 'Cintia' }} onSubmit={handleSubmit}>
+```
+
+## Usabilidade do Input
+Para pegar o focus e o blur do input, armazenar no state `isFocused`. Fazer a estilização conforme props. E para adicionar uma função do `handleBlur`, usar o hooks `useCallback` para evitar que essa função seja criada todas as vezes que esse componente input foi renderizado.
+
+Em `src/components/Input/index.tsx`
+```tsx
+const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
+  const { fieldName, defaultValue, error, registerField } = useField(name);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isFilled, setIsFilled] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleInputFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  const handleInputBlur = useCallback(() => {
+    setIsFocused(false);
+
+    setIsFilled(!!inputRef.current?.value);
+  }, []);
+
+  useEffect(() => {
+    registerField({
+      name: fieldName,
+      ref: inputRef.current,
+      path: 'value',
+    });
+  }, [fieldName, registerField]);
+
+  return (
+    <Container isFilled={isFilled} isFocused={isFocused}>
+      {Icon && <Icon size={20} />}
+      <input
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        defaultValue={defaultValue}
+        ref={inputRef}
+        {...rest}
+      />
+    </Container>
+  );
+};
+```
+
+Em `src/components/Input/styles.ts`
+```ts
+import styled, { css } from 'styled-components';
+
+interface ContainerProps {
+  isFocused: boolean;
+  isFilled: boolean;
+}
+
+export const Container = styled.div<ContainerProps>`
+  background: #232129;
+  border-radius: 10px;
+  padding: 16px;
+  width: 100%;
+
+  border: 2px solid #232129;
+  color: #666360;
+
+  display: flex;
+  align-items: center;
+
+  & + div {
+    margin-top: 8px;
+  }
+
+  ${(props) =>
+    props.isFocused &&
+    css`
+      color: #ff9000;
+      border-color: #ff9000;
+    `}
+
+  ${(props) =>
+    props.isFilled &&
+    css`
+      color: #ff9000;
+    `}
+
+// ...
+```
