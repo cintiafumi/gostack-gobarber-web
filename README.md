@@ -511,3 +511,99 @@ export const Container = styled.div<ContainerProps>`
 
 // ...
 ```
+
+## Validando cadastro
+Instalar `yup` para validação de formulário
+```bash
+yarn add yup
+yarn add @types/yup -D
+```
+
+Em `src/pages/SignUp/index.tsx` importar tudo como `Yup` e fazer a validação do `data`. Como é uma função dentro do componente, usamos o `useCallback`. O Yup para no primeiro erro que dá, e por isso, deixamos o `abortEarly: false` para retornar todos os erros encontrados e não somente o primeiro
+```tsx
+import * as Yup from 'yup';
+// ...
+  const handleSubmit = useCallback(async (data: object) => {
+    try {
+      const schema = Yup.object().shape({
+        name: Yup.string().required('Nome obrigatório'),
+        email: Yup.string()
+          .required('E-mail obrigatório')
+          .email('Digite um e-mail válido'),
+        password: Yup.string().min(6, 'No mínimo 6 caracteres'),
+      });
+
+      await schema.validate(data, {
+        abortEarly: false;
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }, []);
+// ...
+```
+
+## Exibindo erro no input
+A biblioteca `unform` tem uma forma de tratar os erros do input. Primeiramente, vamos criar a referência para o `Form` para então conseguir acessar as propriedades existentes que trata os erros
+Em `src/pages/SignUp/index.tsx`
+```tsx
+  const formRef = useRef(null);
+
+  <Form ref={formRef} onSubmit={handleSubmit}>
+```
+
+Ao dar um `console.log(formRef)` podemos ver dentro da propriedade `current` várias funções para manipular meus inputs, como a `setErrors` que permite setar erro para cada input do `Form`. Mas ao tentar acessar essas propriedades, não conseguimos. Então, precisamos importar o `FormHandles` que tem a interface com a tipagem de todos funções dentro de `formRef.current`
+```tsx
+import { FormHandles } from '@unform/core';
+
+  const formRef = useRef<FormHandles>(null);
+```
+
+Adicionar em `rules` de `eslintrc.json`
+```json
+    "no-unused-expressions": "off",
+```
+
+No `err` do `try/catch` existe a propriedade `inner` que mostra cada um dos erros que aconteceu. Como faremos essa validação dos erros várias vezes, vamos isolar essa função numa pasta `utils`
+
+Em `src/utils/getValidationError.ts`, vamos passar o parâmetro de `ValidationError` que vem do `Form` e vamos tratar para retornar cada erro contendo o `path: message` para cada input. A interface ao invés de colocar especificamente `name: string`, `email: string`, etc, colocamos mais generalizado que vai receber `[key: string]: string`
+```ts
+import { ValidationError } from 'yup';
+
+interface Errors {
+  [key: string]: string;
+}
+
+export default function getValidationError(err: ValidationError): Errors {
+  const validationErrors: Errors = {};
+
+  err.inner.forEach((error) => {
+    validationErrors[error.path] = error.message;
+  });
+
+  return validationErrors;
+}
+```
+
+Adicionamos o `{error}` após o input somente para vermos os erros quando enviamos um submit com valores vazios `src/components/Input/index.tsx`
+```tsx
+    <Container isFilled={isFilled} isFocused={isFocused}>
+      {Icon && <Icon size={20} />}
+      <input
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        defaultValue={defaultValue}
+        ref={inputRef}
+        {...rest}
+      />
+
+      {error}
+    </Container>
+```
+
+E lembrar de limpar os erros no início `src/pages/SignUp/index.tsx`
+```tsx
+const handleSubmit = useCallback(async (data: object) => {
+    try {
+      formRef.current?.setErrors({});
+```
