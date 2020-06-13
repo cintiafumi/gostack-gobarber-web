@@ -1046,3 +1046,51 @@ interface SignInFormData {
         });
 //...
 ```
+
+## Mantendo usuário no storage
+Vamos usar o localStorage para armazenar a informação do usuário. Para garantirmos um pouco de segurança, vamos deixar o token expirar com o menor tempo possível, para o usuário logar de novo. No app, poderemos fazer um refresh token.
+Em `src/context/AuthContext.tsx` vamos salvar no localStorage as informações de token e user
+```tsx
+//...
+    const { token, user } = response.data;
+
+    localStorage.setItem('@GoBarber:token', token);
+    localStorage.setItem('@GoBarber:user', JSON.stringify(user));
+//...
+```
+E para passar essa informação para outros lugares, vamos armazenar no state
+```tsx
+import React, { createContext, useCallback, useState } from 'react';
+
+interface AuthState {
+  token: string;
+  user: object;
+}
+//...
+interface AuthContextData {
+  user: object;
+  signIn(credentials: SignInCredentials): Promise<void>;
+}
+//...
+const AuthProvider: React.FC = ({ children }) => {
+  const [data, setData] = useState<AuthState>(() => {
+    const token = localStorage.getItem('@GoBarber:token');
+    const user = localStorage.getItem('@GoBarber:user');
+
+    if (token && user) {
+      return { token, user: JSON.parse(user) };
+    }
+
+    return {} as AuthState;
+  });
+//...
+  return (
+    <AuthContext.Provider value={{ user: data.user, signIn }}>
+```
+
+Em `src/pages/SignIn/index.tsx` adicionamos o user no useContext e ao fazermos login, podemos ver no console e no localStorage o token e o user salvos
+```tsx
+//...
+  const { user, signIn } = useContext(AuthContext);
+  console.log(user);
+```
