@@ -1094,3 +1094,40 @@ Em `src/pages/SignIn/index.tsx` adicionamos o user no useContext e ao fazermos l
   const { user, signIn } = useContext(AuthContext);
   console.log(user);
 ```
+
+## Criando hook useAuth
+Ao invés de termos
+```tsx
+  const { user, signIn } = useContext(AuthContext);
+```
+Poderíamos ter
+```tsx
+  const { user, signIn } = useAuth();
+```
+
+Então, vamos criar o `useAuth` em `src/context/AuthContext.tsx`
+```tsx
+function useAuth(): AuthContextData {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+
+  return context;
+}
+
+export { AuthProvider, useAuth };
+```
+
+E agora em `src/pages/SignIn/index.tsx` vamos importar somente `useAuth` e verificamos se ainda está funcionando com o console.log do user
+```tsx
+import { useAuth } from '../../context/AuthContext';
+//...
+  const { user, signIn } = useAuth();
+  console.log(user)
+```
+Removemos o user, pois não precisaremos utilizar nessa página por enquanto
+```tsx
+  const { signIn } = useAuth();
+```
