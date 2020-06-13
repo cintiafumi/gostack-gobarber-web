@@ -821,3 +821,22 @@ const SignIn: React.FC = () => {
 
 export default SignIn;
 ```
+
+# Autenticação
+## Habilitando CORS na API
+Voltamos para o projeto de backend
+```bash
+yarn add cors
+yarn add -D @types/cors
+```
+
+Em `src/server.ts`
+```ts
+//...
+import cors from 'cors';
+//...
+app.use(cors());
+//...
+```
+
+Rodar o banco no docker e o server e conferir com o Insomnia se está funcionando.
