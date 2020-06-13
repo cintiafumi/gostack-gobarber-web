@@ -1131,3 +1131,25 @@ Removemos o user, pois não precisaremos utilizar nessa página por enquanto
 ```tsx
   const { signIn } = useAuth();
 ```
+
+## Logout da aplicação
+Em `src/context/AuthContext.tsx` adicionamos o método de signOut
+```tsx
+interface AuthContextData {
+  user: object;
+  signIn(credentials: SignInCredentials): Promise<void>;
+  signOut(): void;
+}
+//...
+  const signOut = useCallback(() => {
+    localStorage.removeItem('@GoBarber:token');
+    localStorage.removeItem('@GoBarber:user');
+
+    setData({} as AuthState);
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user: data.user, signIn, signOut }}>
+```
+
+Mudamos o nome da pasta de `context` para `hooks`
