@@ -607,3 +607,145 @@ const handleSubmit = useCallback(async (data: object) => {
     try {
       formRef.current?.setErrors({});
 ```
+
+## Criando tooltip de erros
+Adicionamos mais uma props no componente do Input para alterar o estilo quando tiver um erro.
+```tsx
+<Container hasError={!!error} isFilled={isFilled} isFocused={isFocused}>
+```
+
+E adicionamos no styled-component desse componente essa prop na tipagem e sua estilização
+```ts
+interface ContainerProps {
+  isFocused: boolean;
+  isFilled: boolean;
+  hasError: boolean;
+}
+// ...
+  ${(props) =>
+    props.hasError &&
+    css`
+      border-color: #c53030;
+    `}
+// ...
+```
+
+E adicionamos um icon no input
+```tsx
+      {error && (
+        <Error>
+          <FiAlertCircle color="#c53030" size={20} />
+        </Error>
+      )}
+```
+
+Na estilização
+```ts
+export const Error = styled.div`
+  height: 20px;
+  margin-left: 16px;
+
+  svg {
+    margin: 0;
+  }
+`;
+```
+
+Criando o compontente Tooltip, temos que importá-lo no styled do Input, assim, é possível passar as propriedades por meio das className. Em `src/components/Tooltip/index.tsx`
+```tsx
+import React from 'react';
+
+import { Container } from './styles';
+
+interface TooltipProps {
+  title: string;
+  className?: string;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ title, className, children }) => {
+  return (
+    <Container className={className}>
+      {children}
+      <span>{title}</span>
+    </Container>
+  );
+};
+
+export default Tooltip;
+```
+
+Em `src/components/Input/styles.ts`
+```ts
+export const Error = styled(Tooltip)`
+  height: 20px;
+  margin-left: 16px;
+
+  svg {
+    margin: 0;
+  }
+`;
+```
+
+Estilizamos então o Tooltip tanto no que deve ser padrão dele em `src/components/Tooltip/styles.ts`
+```ts
+import styled from 'styled-components';
+
+export const Container = styled.div`
+  position: relative;
+
+  span {
+    width: 160px;
+    background: #ff9000;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.4s;
+    visibility: hidden;
+
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: #312e38;
+
+    &::before {
+      content: '';
+      border-style: solid;
+      border-color: #ff9000 transparent;
+      border-width: 6px 6px 0 6px;
+      top: 100%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  &:hover span {
+    opacity: 1;
+    visibility: visible;
+  }
+`;
+```
+
+Quanto no componente Error do Input em `src/components/Input/styles.ts`
+```ts
+export const Error = styled(Tooltip)`
+  height: 20px;
+  margin-left: 16px;
+
+  svg {
+    margin: 0;
+  }
+
+  span {
+    background: #c53030;
+    color: #fff;
+
+    &::before {
+      border-color: #c53030 transparent;
+    }
+  }
+`;
+```
