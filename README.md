@@ -840,3 +840,209 @@ app.use(cors());
 ```
 
 Rodar o banco no docker e o server e conferir com o Insomnia se está funcionando.
+
+
+## API de Contexto
+Contexto é uma variável que vai ficar acessível de modo global ou não. Criamos uma pasta `context` e adicionamos, por exemplo, um contexto de autenticação `src/context/AuthContext.ts`
+```ts
+import { createContext } from 'react';
+
+interface AuthContextData {
+  name: string;
+}
+
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+
+export default AuthContext;
+```
+
+Agora importamos no nosso `App.tsx` e vamos colocar em volta de tudo que queremos que tenha acesso a esse contexto na nossa aplicação e precisamos informar um `value` inicial
+```tsx
+import AuthContext from './context/AuthContext';
+//...
+const App: React.FC = () => {
+  return (
+    <>
+      <AuthContext.Provider value={{ name: 'Cintia' }}>
+        {/* <SignUp /> */}
+        <SignIn />
+      </AuthContext.Provider>
+      <GlobalStyle />
+    </>
+  );
+};
+//...
+```
+
+E em `src/pages/SignIn/index.tsx`
+```tsx
+import React, { useRef, useCallback, useContext } from 'react';
+import AuthContext from '../../context/AuthContext';
+//...
+  const { name } = useContext(AuthContext);
+  console.log(name);
+//...
+```
+
+## Login pelo contexto
+Vamos criar um método de autenticação que vai ser armazenado dentro do nosso contexto de autenticação (cadastro, login, logout). Mas ao invés de colocar todos os contextos de autenticação dentro de `App.tsx`, vamos isolar em um componente React mesmo. Alteramos o arquivo `.ts` para `.tsx`. Em `src/context/AuthContext.tsx`
+```tsx
+import React, { createContext } from 'react';
+
+interface AuthContextData {
+  name: string;
+}
+
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+
+export const AuthProvider: React.FC = ({ children }) => {
+  return (
+    <AuthContext.Provider value={{ name: 'Cintia' }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+```
+
+E fazemos a importação em `App.tsx` do `AuthProvider`
+```tsx
+import { AuthProvider } from './context/AuthContext';
+
+const App: React.FC = () => {
+  return (
+    <>
+      <AuthProvider>
+        {/* <SignUp /> */}
+        <SignIn />
+      </AuthProvider>
+      <GlobalStyle />
+    </>
+  );
+};
+```
+
+E vamos adicionar o método `signIn` dentro de `AuthContext.tsx`
+```tsx
+import React, { createContext, useCallback } from 'react';
+
+interface AuthContextData {
+  name: string;
+  signIn(): void;
+}
+
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+
+const AuthProvider: React.FC = ({ children }) => {
+  const signIn = useCallback(() => {
+    console.log('sign in');
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ name: 'Cintia', signIn }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export { AuthContext, AuthProvider };
+```
+
+Em `src/pages/SignIn/index.tsx`
+```tsx
+import React, { useRef, useCallback, useContext } from 'react';
+//...
+import { AuthContext } from '../../context/AuthContext';
+//...
+  const { signIn } = useContext(AuthContext);
+
+  const handleSubmit = useCallback(
+    async (data: object) => {
+      try {
+        formRef.current?.setErrors({});
+
+        const schema = Yup.object().shape({
+          email: Yup.string()
+            .required('E-mail obrigatório')
+            .email('Digite um e-mail válido'),
+          password: Yup.string().required('Senha obrigatória'),
+        });
+
+        await schema.validate(data, {
+          abortEarly: false,
+        });
+
+        signIn();
+      } catch (err) {
+        const errors = getValidationErrors(err);
+        formRef.current?.setErrors(errors);
+      }
+    },
+    [signIn],
+  );
+```
+
+Instalamos o `axios`
+```bash
+yarn add axios
+```
+
+Vamos ligar o signIn com nossa api criando o arquivo `src/services/api.ts`
+```ts
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3333',
+});
+
+export default api;
+```
+
+Fazemos então a chamada da api no método de signIn em `src/context/AuthContext.tsx`
+```tsx
+import api from '../services/api';
+
+interface SignInCredentials {
+  email: string;
+  password: string;
+}
+//...
+  const signIn = useCallback(async ({ email, password }) => {
+    const response = await api.post('sessions', {
+      email,
+      password,
+    });
+
+    console.log(response.data);
+  }, []);
+```
+
+E vamos fazer a alteração no `src/pages/SignIn/index.tsx`
+```tsx
+//...
+interface SignInFormData {
+  email: string;
+  password: string;
+}
+//...
+  const handleSubmit = useCallback(
+    async (data: SignInFormData) => {
+      try {
+        formRef.current?.setErrors({});
+
+        const schema = Yup.object().shape({
+          email: Yup.string()
+            .required('E-mail obrigatório')
+            .email('Digite um e-mail válido'),
+          password: Yup.string().required('Senha obrigatória'),
+        });
+
+        await schema.validate(data, {
+          abortEarly: false,
+        });
+
+        signIn({
+          email: data.email,
+          password: data.password,
+        });
+//...
+```
