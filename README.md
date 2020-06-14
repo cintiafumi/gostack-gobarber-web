@@ -1152,4 +1152,155 @@ interface AuthContextData {
     <AuthContext.Provider value={{ user: data.user, signIn, signOut }}>
 ```
 
-Mudamos o nome da pasta de `context` para `hooks`
+Mudamos o nome da pasta de `context` para `hooks` e arrumar a importação
+```tsx
+import { useAuth } from '../../hooks/AuthContext';
+```
+
+# Mensagens de toast
+
+## Estrutura de toasts
+Quando der um erro na aplicação, vamos disparar um toast. Vamos criar um componente `src/components/ToastContainer/indext.tsx`
+```tsx
+import React from 'react';
+import { FiAlertCircle, FiXCircle } from 'react-icons/fi';
+
+import { Container, Toast } from './styles';
+
+const ToastContainer: React.FC = () => {
+  return (
+    <Container>
+      <Toast>
+        <FiAlertCircle size={20} />
+
+        <div>
+          <strong>Aconteceu um erro</strong>
+          <p>Não foi possível fazer login na aplicação</p>
+        </div>
+
+        <button type="button">
+          <FiXCircle size={18} />
+        </button>
+      </Toast>
+    </Container>
+  );
+};
+
+export default ToastContainer;
+```
+E importamos ele no `App.tsx`
+```tsx
+import ToastContainer from './components/ToastContainer';
+//...
+      <ToastContainer />
+```
+
+E agora, vamos estilizar o ToastContainer e também adicionar novas props para cada type de toast (success, error, default) ou quando não tiver description.
+
+Em `src/components/ToastContainer/styles.ts`
+```ts
+import styled, { css } from 'styled-components';
+
+interface ToastProps {
+  type?: 'success' | 'error' | 'info';
+  hasDescription: boolean;
+}
+
+const toastTypeVariation = {
+  info: css`
+    background: #ebf8ff;
+    color: #3172b7;
+  `,
+  success: css`
+    background: #e6fffa;
+    color: #2e656a;
+  `,
+  error: css`
+    background: #fddede;
+    color: #c53030;
+  `,
+};
+
+export const Container = styled.div`
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 30px;
+  overflow: hidden;
+`;
+
+export const Toast = styled.div<ToastProps>`
+  width: 360px;
+
+  position: relative;
+  padding: 16px 30px 16px 16px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+
+  display: flex;
+
+  & + div {
+    margin-top: 8px;
+  }
+
+  ${(props) => toastTypeVariation[props.type || 'info']}
+
+  > svg {
+    margin: 4px 12px 0 0;
+  }
+
+  div {
+    flex: 1;
+
+    p {
+      margin-top: 4px;
+      font-size: 14px;
+      opacity: 0.8;
+      line-height: 20px;
+    }
+  }
+
+  button {
+    position: absolute;
+    right: 16px;
+    top: 19px;
+    opacity: 0.6;
+    border: 0;
+    background: transparent;
+    color: inherit;
+  }
+
+  ${(props) =>
+    !props.hasDescription &&
+    css`
+      align-items: center;
+
+      svg {
+        margin-top: 0;
+      }
+    `}
+`;
+```
+
+Em `src/components/ToastContainer/index.tsx`
+```tsx
+//...
+  return (
+    <Container>
+      <Toast hasDescription>
+        ...
+      </Toast>
+
+      <Toast type="success" hasDescription={false}>
+        ...
+      </Toast>
+
+      <Toast type="error" hasDescription>
+        ...
+      </Toast>
+    </Container>
+  );
+};
+
+export default ToastContainer;
+```
