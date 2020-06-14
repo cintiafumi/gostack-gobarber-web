@@ -971,7 +971,7 @@ import { AuthContext } from '../../context/AuthContext';
           abortEarly: false,
         });
 
-        signIn();
+        await signIn();
       } catch (err) {
         const errors = getValidationErrors(err);
         formRef.current?.setErrors(errors);
@@ -1040,7 +1040,7 @@ interface SignInFormData {
           abortEarly: false,
         });
 
-        signIn({
+        await signIn({
           email: data.email,
           password: data.password,
         });
@@ -1304,3 +1304,100 @@ Em `src/components/ToastContainer/index.tsx`
 
 export default ToastContainer;
 ```
+
+## Criando hook de toast
+Para que os toasts apareçam dinamicamente na nossa aplicação `src/hooks/toast.tsx`
+```tsx
+import React, { createContext, useCallback, useContext } from 'react';
+
+interface ToastContextData {
+  addToast(): void;
+  removeToast(): void;
+}
+
+const ToastContext = createContext<ToastContextData>({} as ToastContextData);
+
+const ToastProvider: React.FC = ({ children }) => {
+  const addToast = useCallback(() => {
+    console.log('add toast');
+  }, []);
+
+  const removeToast = useCallback(() => {
+    console.log('add toast');
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ addToast, removeToast }}>
+      {children}
+    </ToastContext.Provider>
+  );
+};
+
+function useToast(): ToastContextData {
+  const context = useContext(ToastContext);
+
+  if (!context) {
+    throw new Error('useToast must be used within a ToastProvider');
+  }
+
+  return context;
+}
+
+export { ToastProvider, useToast };
+```
+
+Mas para não poluir o `App.tsx`, vamos criar um `src/hooks/index.tsx` para fazer a importação de todos os Providers num lugar só
+```tsx
+import React from 'react';
+
+import { AuthProvider } from './auth';
+import { ToastProvider } from './toast';
+
+const AppProvider: React.FC = ({ children }) => {
+  return (
+    <AuthProvider>
+      <ToastProvider>{children}</ToastProvider>
+    </AuthProvider>
+  );
+};
+
+export default AppProvider;
+```
+
+E então fazemos a importação em `App.tsx` e movemos o ToastContainer para dentro do contexto (hook) de Toast
+```tsx
+//...
+      <AppProvider>
+        {/* <SignUp /> */}
+        <SignIn />
+      </AppProvider>
+```
+
+Em `src/hooks/toast.tsx`
+```tsx
+//...
+  return (
+    <ToastContext.Provider value={{ addToast, removeToast }}>
+      {children}
+      <ToastContainer />
+    </ToastContext.Provider>
+  );
+```
+
+Agora podemos importar em SignIn o useToast `src/pages/SignIn/index.tsx`
+```tsx
+import { useToast } from '../../hooks/toast';
+//...
+  const { addToast } = useToast();
+//...
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const errors = getValidationErrors(err);
+          formRef.current?.setErrors(errors);
+        }
+
+        addToast();
+      }
+    },
+    [signIn, addToast],
+  ```
