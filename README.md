@@ -1671,3 +1671,136 @@ import { animated } from 'react-spring';
 //...
 export const Container = styled(animated.div)<ToastProps>`
 ```
+
+# Rotas da aplicação
+## Configurando Rotas
+Instalar `react-router-dom`
+```bash
+yarn add react-router-dom
+yarn add -D @types/react-router-dom
+```
+
+Criamos um arquivo `gobarber-web/src/routes/index.tsx`
+```tsx
+import React from 'react';
+import { Switch, Route } from 'react-router-dom';
+
+import SignIn from '../pages/SignIn';
+import SignUp from '../pages/SignUp';
+
+const Routes: React.FC = () => (
+  <Switch>
+    <Route path="/" exact component={SignIn} />
+    <Route path="/signup" component={SignUp} />
+  </Switch>
+);
+
+export default Routes;
+```
+Alteramos em `gobarber-web/src/App.tsx`
+```tsx
+import { BrowserRouter as Router } from 'react-router-dom';
+
+import Routes from './routes';
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <AppProvider>
+        <Routes />
+      </AppProvider>
+
+      <GlobalStyle />
+    </Router>
+  );
+};
+```
+
+Em `gobarber-web/src/pages/SignIn/index.tsx`
+```tsx
+import { Link } from 'react-router-dom';
+//...
+        <Link to="/signup">
+          <FiLogIn />
+          Criar conta
+        </Link>
+```
+
+Em `gobarber-web/src/pages/SignUp/index.tsx` fazer o mesmo.
+
+Agora vamos fazer uma animação ao carregar as páginas de SignIn e SignUp envolvendo o conteúdo de `<Content>` com outra tag `<AnimationContainer>` e fazendo o keyframe na estilização
+```ts
+import styled, { keyframes } from 'styled-components';
+//...
+export const Content = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  max-width: 700px;
+`;
+
+const appearFromLeft = keyframes`
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+`;
+
+export const AnimationContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  animation: ${appearFromLeft} 1s;
+
+  form {
+    margin: 80px 0;
+    width: 340px;
+    text-align: center;
+
+    h1 {
+      margin-bottom: 24px;
+    }
+
+    a {
+      color: #f4ede8;
+      display: block;
+      margin-top: 24px;
+      text-decoration: none;
+      transition: color 0.2s;
+
+      &:hover {
+        color: ${shade(0.2, '#f4ede8')};
+      }
+    }
+  }
+
+  > a {
+    color: #ff9000;
+    display: block;
+    margin-top: 24px;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    display: flex;
+    align-items: center;
+
+    svg {
+      margin-right: 16px;
+    }
+
+    &:hover {
+      color: ${shade(0.2, '#ff9000')};
+    }
+  }
+`;
+```
+E na página de SignUp replicar o mesmo style porém fazendo animation da direita.
