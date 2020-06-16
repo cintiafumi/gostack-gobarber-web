@@ -1401,3 +1401,220 @@ import { useToast } from '../../hooks/toast';
     },
     [signIn, addToast],
   ```
+
+## Adicionando e removendo Toasts
+Usamos o estado para armazenar os toasts. Em `gobarber-web/src/hooks/toast.tsx`, vamos importar `useState` e criar as constantes de `messages` e `setMessages` para armazenar o array de toasts.
+```tsx
+import React, { createContext, useCallback, useContext, useState } from 'react';
+//...
+interface ToastMessage {
+  id: string;
+  type?: 'success' | 'error' | 'info'
+  title: string;
+  description?: string;
+}
+//...
+  const [messages, setMessages] = useState<ToastMessage[]>([]);
+```
+
+Vamos instalar o pacote para criar os ids dos toasts
+```bash
+yarn add uuidv4
+```
+
+No método `addToast`, primeiramente criamos um `id`. O parâmetro recebido `message` tem todas as propriedades da interface de `ToastMessage` menos o `id`, por isso, usamos o `Omit`. Em `gobarber-web/src/hooks/toast.tsx`
+```tsx
+  const [messages, setMessages] = useState<ToastMessage[]>([]);
+  const addToast = useCallback(({ type, title, description }: Omit<ToastMessage, 'id'>) => {
+    const id = uuid();
+
+    const toast = {
+      id,
+      type,
+      title,
+      description
+    }
+
+    setMessages(state => [ ...state, toast ])
+  }, []);
+//...
+      <ToastContainer messages={messages} />
+```
+
+Em `gobarber-web/src/components/ToastContainer/index.tsx`
+```tsx
+import { ToastMessage } from '../../hooks/toast';
+import { Container, Toast } from './styles';
+
+interface ToastContainerProps {
+  messages: ToastMessage[]
+}
+
+const ToastContainer: React.FC<ToastContainerProps> = ({ messages }) => {
+  return (
+    <Container>
+      {messages.map(message => (
+        <Toast key={message.id} type={message.type} hasDescription={!!message.description}>
+          <FiAlertCircle size={20} />
+
+          <div>
+            <strong>{message.title}</strong>
+            {message.description && <p>{message.description}</p>}
+          </div>
+
+          <button type="button">
+            <FiXCircle size={18} />
+          </button>
+        </Toast>
+      ))}
+    </Container>
+  );
+};
+```
+
+E para remover um toast, em `gobarber-web/src/hooks/toast.tsx`
+```tsx
+interface ToastContextData {
+  addToast(message: Omit<ToastMessage, 'id'>): void;
+  removeToast(id: string): void;
+}
+
+  const removeToast = useCallback((id: string) => {
+    setMessages(state => state.filter(message => message.id !== id))
+  }, []);
+  ```
+
+  E adicionamos no botão de remover toast lá de `gobarber-web/src/components/ToastContainer/index.tsx`
+  ```tsx
+import { ToastMessage, useToast } from '../../hooks/toast';
+//...
+  const { removeToast } = useToast();
+//...
+          <button type="button" onClick={() => removeToast(message.id)}>
+```
+
+E vamos também fazer com que o Toast feche sozinho depois de um tempo, lembrando que precisamos limpar o timeout se o usuário fechar o toast antes. Então, vamos isolar o Toast do ToastContainer criando uma pasta `gobarber-web/src/components/ToastContainer/Toast/` e passando o componente para lá. Também adicionamos outros icons para quando for type success ou info.
+```tsx
+import React, { useEffect } from 'react';
+import { FiAlertCircle, FiCheck, FiInfo, FiXCircle } from 'react-icons/fi';
+
+import { ToastMessage, useToast } from '../../../hooks/toast';
+
+import { Container } from './styles'
+
+interface ToastProps {
+  message: ToastMessage;
+}
+
+const icons = {
+  info: <FiInfo size={24} />,
+  error: <FiAlertCircle size={24} />,
+  success: <FiCheck size={24} />,
+}
+
+const Toast: React.FC<ToastProps> = ({ message }) => {
+  const { removeToast } = useToast();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      removeToast(message.id)
+    }, 3000)
+
+    return () => clearTimeout(timer);
+  }, [removeToast, message.id]);
+
+  return (
+    <Container type={message.type} hasDescription={!!message.description}>
+      {icons[message.type || 'info']}
+
+      <div>
+        <strong>{message.title}</strong>
+        {message.description && <p>{message.description}</p>}
+      </div>
+
+      <button type="button" onClick={() => removeToast(message.id)}>
+        <FiXCircle size={18} />
+      </button>
+    </Container>
+  )
+}
+
+export default Toast;
+```
+Com seu estilo
+```ts
+import styled, { css } from 'styled-components';
+
+interface ToastProps {
+  type?: 'success' | 'error' | 'info';
+  hasDescription: boolean;
+}
+
+const toastTypeVariation = {
+  info: css`
+    background: #ebf8ff;
+    color: #3172b7;
+  `,
+  success: css`
+    background: #e6fffa;
+    color: #2e656a;
+  `,
+  error: css`
+    background: #fddede;
+    color: #c53030;
+  `,
+};
+
+
+export const Container = styled.div<ToastProps>`
+  width: 360px;
+
+  position: relative;
+  padding: 16px 30px 16px 16px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+
+  display: flex;
+
+  & + div {
+    margin-top: 8px;
+  }
+
+  ${(props) => toastTypeVariation[props.type || 'info']}
+
+  > svg {
+    margin: 4px 12px 0 0;
+  }
+
+  div {
+    flex: 1;
+
+    p {
+      margin-top: 4px;
+      font-size: 14px;
+      opacity: 0.8;
+      line-height: 20px;
+    }
+  }
+
+  button {
+    position: absolute;
+    right: 16px;
+    top: 19px;
+    opacity: 0.6;
+    border: 0;
+    background: transparent;
+    color: inherit;
+  }
+
+  ${(props) =>
+    !props.hasDescription &&
+    css`
+      align-items: center;
+
+      svg {
+        margin-top: 0;
+      }
+    `}
+`;
+```
