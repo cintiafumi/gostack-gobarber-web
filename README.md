@@ -1618,3 +1618,56 @@ export const Container = styled.div<ToastProps>`
     `}
 `;
 ```
+
+## Animação dos Toasts
+Adicionar `react-spring`
+```bash
+yarn add react-spring
+```
+Para controlar quando um elemento entra e sai de uma tela, usamos o `useTransition` que recebe 3 parâmetros, o primeiro são as `messages`, o segundo parâmetro é uma função que vai obter a chave da `message` que é única, e o terceiro parâmetro é um objeto contendo as animações. Em `gobarber-web/src/components/ToastContainer/index.tsx`
+```tsx
+import { useTransition } from 'react-spring';
+//...
+  const messagesWithTransitions = useTransition(
+    messages,
+    message => message.id,
+    {
+      from: { right: '-120%', opacity: 0 },
+      enter: { right: '0%', opacity: 1 },
+      leave: { right: '-120%', opacity: 0 },
+    }
+  );
+  //...
+    <Container>
+      {messagesWithTransitions.map(({ item, key, props }) => (
+        <Toast
+          key={key}
+          style={props}
+          message={item}
+        />
+      ))}
+    </Container>
+```
+
+Em `gobarber-web/src/components/ToastContainer/Toast/index.tsx`
+```tsx
+interface ToastProps {
+  message: ToastMessage;
+  style: object;
+}
+//...
+const Toast: React.FC<ToastProps> = ({ message, style }) => {
+//...
+    <Container
+      type={message.type}
+      hasDescription={!!message.description}
+      style={style}
+    >
+```
+
+Em `gobarber-web/src/components/ToastContainer/Toast/styles.ts`
+```ts
+import { animated } from 'react-spring';
+//...
+export const Container = styled(animated.div)<ToastProps>`
+```
