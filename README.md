@@ -1863,3 +1863,56 @@ const Dashboard: React.FC = () => {
 
 export default Dashboard;
 ```
+
+## Finalizando App
+Na tela de cadastro vamos adicionar o `useHistory` e o `useToast` para quando o cadastro for realizado com sucesso, assim como, o toast se der algo errado.
+```tsx
+import { Link, useHistory } from 'react-router-dom';
+import api from '../../services/api';
+import { useToast } from '../../hooks/toast';
+//...
+interface SignUpFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+const SignUp: React.FC = () => {
+  //...
+  const history = useHistory();
+
+  const handleSubmit = useCallback(async (data: SignUpFormData) => {
+      await api.post('/users', data);
+
+      history.push('/');
+
+      addToast({
+        type: 'success',
+        title: 'Cadastro realizado!',
+        description: 'Você já pode fazer o seu login no GoBarber!'
+      });
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const errors = getValidationErrors(err);
+        formRef.current?.setErrors(errors);
+
+        return;
+      }
+
+      addToast({
+        type: 'error',
+        title: 'Erro no cadastro',
+        description: 'Ocorreu um erro ao fazer cadastro. Tente novamente.'
+      });
+    }
+  }, [addToast, history]);
+```
+
+E no SignIn faltou adicionarmos o `useHistory` para redirecionar para o Dashboard
+```tsx
+import { Link, useHistory } from 'react-router-dom';
+//...
+  const history = useHistory();
+
+        history.push('/dashboard');
+```
