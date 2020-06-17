@@ -1403,7 +1403,7 @@ import { useToast } from '../../hooks/toast';
   ```
 
 ## Adicionando e removendo Toasts
-Usamos o estado para armazenar os toasts. Em `gobarber-web/src/hooks/toast.tsx`, vamos importar `useState` e criar as constantes de `messages` e `setMessages` para armazenar o array de toasts.
+Usamos o estado para armazenar os toasts. Em `src/hooks/toast.tsx`, vamos importar `useState` e criar as constantes de `messages` e `setMessages` para armazenar o array de toasts.
 ```tsx
 import React, { createContext, useCallback, useContext, useState } from 'react';
 //...
@@ -1422,7 +1422,7 @@ Vamos instalar o pacote para criar os ids dos toasts
 yarn add uuidv4
 ```
 
-No método `addToast`, primeiramente criamos um `id`. O parâmetro recebido `message` tem todas as propriedades da interface de `ToastMessage` menos o `id`, por isso, usamos o `Omit`. Em `gobarber-web/src/hooks/toast.tsx`
+No método `addToast`, primeiramente criamos um `id`. O parâmetro recebido `message` tem todas as propriedades da interface de `ToastMessage` menos o `id`, por isso, usamos o `Omit`. Em `src/hooks/toast.tsx`
 ```tsx
   const [messages, setMessages] = useState<ToastMessage[]>([]);
   const addToast = useCallback(({ type, title, description }: Omit<ToastMessage, 'id'>) => {
@@ -1441,7 +1441,7 @@ No método `addToast`, primeiramente criamos um `id`. O parâmetro recebido `mes
       <ToastContainer messages={messages} />
 ```
 
-Em `gobarber-web/src/components/ToastContainer/index.tsx`
+Em `src/components/ToastContainer/index.tsx`
 ```tsx
 import { ToastMessage } from '../../hooks/toast';
 import { Container, Toast } from './styles';
@@ -1472,7 +1472,7 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ messages }) => {
 };
 ```
 
-E para remover um toast, em `gobarber-web/src/hooks/toast.tsx`
+E para remover um toast, em `src/hooks/toast.tsx`
 ```tsx
 interface ToastContextData {
   addToast(message: Omit<ToastMessage, 'id'>): void;
@@ -1484,7 +1484,7 @@ interface ToastContextData {
   }, []);
   ```
 
-  E adicionamos no botão de remover toast lá de `gobarber-web/src/components/ToastContainer/index.tsx`
+  E adicionamos no botão de remover toast lá de `src/components/ToastContainer/index.tsx`
   ```tsx
 import { ToastMessage, useToast } from '../../hooks/toast';
 //...
@@ -1493,7 +1493,7 @@ import { ToastMessage, useToast } from '../../hooks/toast';
           <button type="button" onClick={() => removeToast(message.id)}>
 ```
 
-E vamos também fazer com que o Toast feche sozinho depois de um tempo, lembrando que precisamos limpar o timeout se o usuário fechar o toast antes. Então, vamos isolar o Toast do ToastContainer criando uma pasta `gobarber-web/src/components/ToastContainer/Toast/` e passando o componente para lá. Também adicionamos outros icons para quando for type success ou info.
+E vamos também fazer com que o Toast feche sozinho depois de um tempo, lembrando que precisamos limpar o timeout se o usuário fechar o toast antes. Então, vamos isolar o Toast do ToastContainer criando uma pasta `src/components/ToastContainer/Toast/` e passando o componente para lá. Também adicionamos outros icons para quando for type success ou info.
 ```tsx
 import React, { useEffect } from 'react';
 import { FiAlertCircle, FiCheck, FiInfo, FiXCircle } from 'react-icons/fi';
@@ -1624,7 +1624,7 @@ Adicionar `react-spring`
 ```bash
 yarn add react-spring
 ```
-Para controlar quando um elemento entra e sai de uma tela, usamos o `useTransition` que recebe 3 parâmetros, o primeiro são as `messages`, o segundo parâmetro é uma função que vai obter a chave da `message` que é única, e o terceiro parâmetro é um objeto contendo as animações. Em `gobarber-web/src/components/ToastContainer/index.tsx`
+Para controlar quando um elemento entra e sai de uma tela, usamos o `useTransition` que recebe 3 parâmetros, o primeiro são as `messages`, o segundo parâmetro é uma função que vai obter a chave da `message` que é única, e o terceiro parâmetro é um objeto contendo as animações. Em `src/components/ToastContainer/index.tsx`
 ```tsx
 import { useTransition } from 'react-spring';
 //...
@@ -1649,7 +1649,7 @@ import { useTransition } from 'react-spring';
     </Container>
 ```
 
-Em `gobarber-web/src/components/ToastContainer/Toast/index.tsx`
+Em `src/components/ToastContainer/Toast/index.tsx`
 ```tsx
 interface ToastProps {
   message: ToastMessage;
@@ -1665,7 +1665,7 @@ const Toast: React.FC<ToastProps> = ({ message, style }) => {
     >
 ```
 
-Em `gobarber-web/src/components/ToastContainer/Toast/styles.ts`
+Em `src/components/ToastContainer/Toast/styles.ts`
 ```ts
 import { animated } from 'react-spring';
 //...
@@ -1680,7 +1680,7 @@ yarn add react-router-dom
 yarn add -D @types/react-router-dom
 ```
 
-Criamos um arquivo `gobarber-web/src/routes/index.tsx`
+Criamos um arquivo `src/routes/index.tsx`
 ```tsx
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
@@ -1697,7 +1697,7 @@ const Routes: React.FC = () => (
 
 export default Routes;
 ```
-Alteramos em `gobarber-web/src/App.tsx`
+Alteramos em `src/App.tsx`
 ```tsx
 import { BrowserRouter as Router } from 'react-router-dom';
 
@@ -1716,7 +1716,7 @@ const App: React.FC = () => {
 };
 ```
 
-Em `gobarber-web/src/pages/SignIn/index.tsx`
+Em `src/pages/SignIn/index.tsx`
 ```tsx
 import { Link } from 'react-router-dom';
 //...
@@ -1726,7 +1726,7 @@ import { Link } from 'react-router-dom';
         </Link>
 ```
 
-Em `gobarber-web/src/pages/SignUp/index.tsx` fazer o mesmo.
+Em `src/pages/SignUp/index.tsx` fazer o mesmo.
 
 Agora vamos fazer uma animação ao carregar as páginas de SignIn e SignUp envolvendo o conteúdo de `<Content>` com outra tag `<AnimationContainer>` e fazendo o keyframe na estilização
 ```ts
@@ -1804,3 +1804,62 @@ export const AnimationContainer = styled.div`
 `;
 ```
 E na página de SignUp replicar o mesmo style porém fazendo animation da direita.
+
+## Rotas autenticadas
+Criar um componente de rotas que se o usuário estiver logado, ser redirecionado para a página Dashboard, e se caso não esteja logado, vá para página de SignIn. Em `src/routes/Route.tsx`
+```tsx
+import React from 'react';
+import {
+  Route as ReactDOMRoute,
+  RouteProps as ReactDOMRouteProps,
+  Redirect,
+} from 'react-router-dom';
+import { useAuth } from '../hooks/auth';
+
+interface RouteProps extends ReactDOMRouteProps {
+  isPrivate?: boolean;
+  component: React.ComponentType;
+}
+
+const Route: React.FC<RouteProps> = ({ isPrivate = false, component: Component, ...rest }) => {
+  const { user } = useAuth();
+
+  return (
+    <ReactDOMRoute
+      {...rest}
+      render={({ location }) => {
+        return isPrivate === !!user ? (
+          <Component />
+        ) : (
+          <Redirect to={{
+            pathname: isPrivate ? '/' : '/dashboard',
+            state: { from: location }
+          }} />
+        )
+      }}
+    />
+  );
+}
+
+export default Route;
+```
+
+Importamos em `src/routes/index.tsx`
+```tsx
+import Route from './Route';
+//...
+    <Route path="/dashboard" component={Dashboard} isPrivate />
+```
+
+E também criamos a página de Dashboard `src/pages/Dashboard/index.tsx`
+```tsx
+import React from 'react';
+
+const Dashboard: React.FC = () => {
+  return (
+    <h1>Hello</h1>
+  );
+}
+
+export default Dashboard;
+```
