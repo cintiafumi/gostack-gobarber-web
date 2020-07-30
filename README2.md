@@ -102,3 +102,72 @@ E alteramos em `SignIn`
 ```tsx
             <Link to="/forgot-password">Esqueci minha senha</Link>
 ```
+
+## Enviando formulário a API
+Ligando nossa página `ForgotPassword` com o back-end. Vamos adicionar a `api` para a rota (e mudamos o endereço no back-end).
+```tsx
+const ForgotPassword: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  //...
+  const handleSubmit = useCallback(
+    async (data: ForgotPasswordFormData) => {
+      try {
+        setLoading(true);
+        //...
+        await api.post('/password/forgot', {
+          email: data.email,
+        });
+        addToast({
+          type: 'success',
+          title: 'E-mail de recuperação enviado',
+          description:
+            'Enviamos um e-mail para confirmar a recuperação de senha. Cheque sua caixa de entrada',
+        });
+      } catch (err) {
+        //...
+      } finally {
+        setLoading(false);
+      }
+    },
+    [addToast],
+  );
+  return (
+    //...
+            <Button loading={loading} type="submit">
+              Recuperar
+            </Button>
+    //...
+  );
+};
+```
+
+Também adicionamos o loading dentro do botão.
+```tsx
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  loading?: boolean;
+};
+
+const Button: React.FC<ButtonProps> = ({ children, loading, ...rest }) => (
+  <Container type="button" {...rest}>
+    {loading ? 'Carregando...' : children}
+  </Container>
+);
+```
+
+E corrigimos um erro da prop `hasDescription` do componente `Toast`, pois não podemos passar um booleano para o html como props. Então, transformamos em `Number` para contornar esse caso.
+```tsx
+//...
+    <Container
+      type={message.type}
+      hasDescription={Number(!!message.description)}
+      style={style}
+    >
+```
+
+E no style
+```ts
+interface ToastProps {
+  type?: 'success' | 'error' | 'info';
+  hasDescription: number;
+}
+```
