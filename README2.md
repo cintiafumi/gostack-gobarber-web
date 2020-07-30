@@ -301,3 +301,112 @@ const ResetPassword: React.FC = () => {
           token,
         });
 ```
+
+## Criando Header
+Vamos criar o `Header` da página `Dashboard`
+```tsx
+import React from 'react';
+
+import { FiPower } from 'react-icons/fi';
+import { Container, Header, HeaderContent, Profile } from './styles';
+
+import logoImg from '../../assets/logo.svg';
+import { useAuth } from '../../hooks/auth';
+
+const Dashboard: React.FC = () => {
+  const { signOut, user } = useAuth();
+
+  return (
+    <Container>
+      <Header>
+        <HeaderContent>
+          <img src={logoImg} alt="GoBarber" />
+
+          <Profile>
+            <img src={user.avatar_url} alt={user.name} />
+            <div>
+              <span>Bem vindo,</span>
+              <strong>{user.name}</strong>
+            </div>
+          </Profile>
+
+          <button type="button" onClick={signOut}>
+            <FiPower />
+          </button>
+        </HeaderContent>
+      </Header>
+    </Container>
+  );
+};
+```
+
+E também seu estilo
+```ts
+import styled from 'styled-components';
+
+export const Container = styled.div``;
+
+export const Header = styled.header`
+  padding: 32px 0;
+  background: #28262e;
+`;
+
+export const HeaderContent = styled.div`
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+
+  > img {
+    height: 80px;
+  }
+
+  button {
+    margin-left: auto;
+    background: transparent;
+    border: 0;
+
+    svg {
+      color: #999591;
+      height: 20px;
+      width: 20px;
+    }
+  }
+`;
+
+export const Profile = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 80px;
+
+  img {
+    height: 56px;
+    width: 56px;
+    border-radius: 50%;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    margin-left: 16px;
+    line-height: 24px;
+
+    span {
+      color: #f4ede8;
+    }
+
+    strong {
+      color: #ff9000;
+    }
+  }
+`;
+```
+
+Adicionamos a interface `User` pois antes estava somente como `user: object`, então o intellisense não pegava.
+```ts
+interface User {
+  id: string;
+  name: string;
+  avatar_url: string;
+}
+```
