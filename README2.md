@@ -280,3 +280,24 @@ Adicionado a rule no eslint
 ```json
     "@typescript-eslint/camelcase": "off",
 ```
+
+## Implementando redefinição
+Em `ResetPassword`
+```tsx
+const ResetPassword: React.FC = () => {
+  //...
+  const location = useLocation();
+  //...
+          const { password, password_confirmation } = data;
+        const token = location.search.replace('?token=', '');
+
+        if (!token) {
+          throw new Error();
+        }
+
+        await api.post('/password/reset', {
+          password,
+          password_confirmation,
+          token,
+        });
+```
