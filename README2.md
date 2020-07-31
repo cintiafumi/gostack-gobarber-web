@@ -536,3 +536,119 @@ export const Calendar = styled.aside`
   width: 380px;
 `;
 ```
+
+## Listagem de agendamentos
+Adicionamos a sessão da manhã e da tarde
+```tsx
+          <Section>
+            <strong>Manhã</strong>
+
+            <Appointment>
+              <span>
+                <FiClock />
+                08:00
+              </span>
+
+              <div>
+                <img
+                  src="https://avatars1.githubusercontent.com/u/34029172?s=460&u=87514f974accb262acd3ed1f3cd9553684b4d926&v=4"
+                  alt="Cintia Fumi"
+                />
+                <strong>Cintia Fumi</strong>
+              </div>
+            </Appointment>
+
+            <Appointment>
+              <span>
+                <FiClock />
+                08:00
+              </span>
+
+              <div>
+                <img
+                  src="https://avatars1.githubusercontent.com/u/34029172?s=460&u=87514f974accb262acd3ed1f3cd9553684b4d926&v=4"
+                  alt="Cintia Fumi"
+                />
+                <strong>Cintia Fumi</strong>
+              </div>
+            </Appointment>
+          </Section>
+
+          <Section>
+            <strong>Tarde</strong>
+
+            <Appointment>
+              <span>
+                <FiClock />
+                08:00
+              </span>
+
+              <div>
+                <img
+                  src="https://avatars1.githubusercontent.com/u/34029172?s=460&u=87514f974accb262acd3ed1f3cd9553684b4d926&v=4"
+                  alt="Cintia Fumi"
+                />
+                <strong>Cintia Fumi</strong>
+              </div>
+            </Appointment>
+          </Section>
+```
+E seu estilo
+```ts
+export const Section = styled.section`
+  margin-top: 48px;
+
+  > strong {
+    color: #999591;
+    font-size: 20px;
+    line-height: 26px;
+    border-bottom: 1px solid #3e3b47;
+    display: block;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+  }
+`;
+
+export const Appointment = styled.div`
+  display: flex;
+  align-items: center;
+
+  & + div {
+    margin-top: 16px;
+  }
+
+  span {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    color: #f4ede8;
+
+    svg {
+      color: #ff9000;
+      margin-right: 8px;
+    }
+  }
+
+  div {
+    flex: 1;
+    background: #3e3b47;
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    border-radius: 10px;
+    margin-left: 24px;
+
+    img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+    }
+
+    strong {
+      margin-left: 24px;
+      color: #fff;
+      font-size: 20px;
+    }
+  }
+`;
+```
