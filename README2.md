@@ -838,3 +838,100 @@ const Dashboard: React.FC = () => {
             <span>{selectedWeekDay}</span>
           </p>
 ```
+
+## Exibindo agendamentos em tela
+Após o get na api, temos que formatar a data, separar os appointments em manhã e tarde.
+```tsx
+//...
+  useEffect(() => {
+    api
+      .get<Appointment[]>('/appointments/me', {
+        params: {
+          year: selectedDate.getFullYear(),
+          month: selectedDate.getMonth() + 1,
+          day: selectedDate.getDate(),
+        },
+      })
+      .then((response) => {
+        const formattedDateAppointments = response.data.map((appointment) => {
+          return {
+            ...appointment,
+            formattedHour: format(parseISO(appointment.date), 'HH:mm'),
+          };
+        });
+        setAppointments(formattedDateAppointments);
+      });
+  }, [selectedDate]);
+  //...
+  const morningAppointments = useMemo(() => {
+    return appointments.filter((appointment) => {
+      return parseISO(appointment.date).getHours() < 12;
+    });
+  }, [appointments]);
+
+  const afternoonAppointments = useMemo(() => {
+    return appointments.filter((appointment) => {
+      return parseISO(appointment.date).getHours() >= 12;
+    });
+  }, [appointments]);
+  //...
+          <Section>
+            <strong>Manhã</strong>
+
+            {morningAppointments.map((appointment) => (
+              <Appointment key={appointment.id}>
+                <span>
+                  <FiClock />
+                  {appointment.formattedHour}
+                </span>
+
+                <div>
+                  <img
+                    src={appointment.user.avatar_url}
+                    alt={appointment.user.name}
+                  />
+                  <strong>{appointment.user.name}</strong>
+                </div>
+              </Appointment>
+            ))}
+          </Section>
+
+          <Section>
+            <strong>Tarde</strong>
+
+            {afternoonAppointments.map((appointment) => (
+              <Appointment key={appointment.id}>
+                <span>
+                  <FiClock />
+                  {appointment.formattedHour}
+                </span>
+
+                <div>
+                  <img
+                    src={appointment.user.avatar_url}
+                    alt={appointment.user.name}
+                  />
+                  <strong>{appointment.user.name}</strong>
+                </div>
+              </Appointment>
+            ))}
+          </Section>
+```
+
+Adicionamos somente uma largura no span dos horários
+```ts
+export const Appointment = styled.div`
+  //...
+  span {
+    //...
+    width: 70px;
+```
+
+E vimos que algumas imagens não estavam carregando, então, voltamos no back-end para trocar a order em `server.ts`
+```ts
+app.use(cors());
+app.use(express.json());
+app.use('/files', express.static(uploadConfig.uploadFolder));
+app.use(rateLimiter); // deixar após o carregamento das imagens
+app.use(routes);
+```
