@@ -773,3 +773,68 @@ const AuthProvider: React.FC = ({ children }) => {
     //...
   }, []);
   ```
+
+## Agendamentos da API
+Instalamos o `date-fns` para formatar as datas.
+```sh
+yarn add date-fns
+```
+Desabilitamos no eslint o que estava reclamando sobre fazer importações duplicadas. (E desativei o camelcase por causa do `avatar_url` que recebemos na resposta da API)
+```json
+    "import/no-duplicates": "off",
+    "camelcase": "off",
+```
+
+Toda vez que vamos formatar uma informação, combinamos anteriormente em usar o hook `useMemo`. Como precisamos atualizar algumas informações na tela referente à data selecionada no calendário, então colocamos as constantes para renderizar sempre que `selectedDate` for modificado.
+```tsx
+import { isToday, format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+//...
+interface Appointment {
+  id: string;
+  date: string;
+  user: {
+    name: string;
+    avatar_url: string;
+  };
+}
+//...
+const Dashboard: React.FC = () => {
+  //...
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  //...
+  useEffect(() => {
+    api
+      .get('/appointments/me', {
+        params: {
+          year: selectedDate.getFullYear(),
+          month: selectedDate.getMonth() + 1,
+          day: selectedDate.getDate(),
+        },
+      })
+      .then((response) => {
+        setAppointments(response.data);
+        console.log(response.data);
+      });
+  }, [selectedDate]);
+  //...
+  const selectedDateAsText = useMemo(() => {
+    return format(selectedDate, "'Dia' dd 'de' MMMM", { locale: ptBR });
+  }, [selectedDate]);
+
+  const selectedWeekDay = useMemo(() => {
+    return format(selectedDate, 'cccc', { locale: ptBR });
+  }, [selectedDate]);
+
+  return (
+    <Container>
+      //...
+      <Content>
+        <Schedule>
+          <h1>Horários agendados</h1>
+          <p>
+            {isToday(selectedDate) && <span>Hoje</span>}
+            <span>{selectedDateAsText}</span>
+            <span>{selectedWeekDay}</span>
+          </p>
+```

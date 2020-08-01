@@ -36,8 +36,9 @@
     "react/jsx-props-no-spreading": "off",
     "react/prop-types": "off",
     "no-unused-expressions": "off",
+    "import/no-duplicates": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/camelcase": "off",
+    "camelcase": "off",
     "import/prefer-default-export": "off",
     "import/extensions": [
       "error",
