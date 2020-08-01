@@ -1916,3 +1916,5 @@ import { Link, useHistory } from 'react-router-dom';
 
         history.push('/dashboard');
 ```
+
+Continuar em [Recuperação de senha](README2.md)
