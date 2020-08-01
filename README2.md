@@ -699,3 +699,77 @@ const Dashboard: React.FC = () => {
         </Calendar>
 ```
 E o estilo pegamos pronto no [link](https://gist.github.com/diego3g/325d250596e923f6b6028576fcb684da).
+
+## Disponibilidade do mês
+
+### 🚨useMemo 🚨
+Usaremos o hook `useMemo` do React quando fizermos um cálculo ou quisermos manter um valor específico salvo, independente de quantas vezes o nosso componente renderize. Ele serve para memorizar um valor específico ou uma formatação e vamos dizer quando queremos que esse valor seja recarregado. Se vamos criar a variável dos dias desabilitados, vamos utilizar as variáveis: o ano, o mês atual e a resposta da nossa API. Essas variáveis vão então no array de dependências do `useMemo`.
+```tsx
+interface MonthAvailabilityItem {
+  day: number;
+  available: boolean;
+}
+
+const Dashboard: React.FC = () => {
+  const { signOut, user } = useAuth();
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [monthAvailability, setMonthAvailability] = useState<
+    MonthAvailabilityItem[]
+  >([]);
+
+  //...
+
+  const handleMonthChange = useCallback((month: Date) => {
+    setCurrentMonth(month);
+  }, []);
+
+  useEffect(() => {
+    api
+      .get(`/providers/${user.id}/month-availability`, {
+        params: {
+          year: currentMonth.getFullYear(),
+          month: currentMonth.getMonth() + 1,
+        },
+      })
+      .then((response) => {
+        setMonthAvailability(response.data);
+      });
+  }, [currentMonth, user.id]);
+
+  const disabledDays = useMemo(() => {
+    const dates = monthAvailability
+      .filter((monthDay) => monthDay.available === false)
+      .map((monthDay) => {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+
+        return new Date(year, month, monthDay.day);
+      });
+    return dates;
+  }, [currentMonth, monthAvailability]);
+
+  //...
+          <DayPicker
+            //...
+            disabledDays={[{ daysOfWeek: [0, 6] }, ...disabledDays]}
+            //...
+            onMonthChange={handleMonthChange}
+```
+
+E no arquivo `auth` vamos manter o `Bearer token` dentro da header da requisição
+```ts
+const AuthProvider: React.FC = ({ children }) => {
+  //...
+    if (token && user) {
+      api.defaults.headers.authorization = `Bearer ${token}`;
+      return { token, user: JSON.parse(user) };
+    }
+  //...
+  const signIn = useCallback(async ({ email, password }) => {
+    //...
+    api.defaults.headers.authorization = `Bearer ${token}`;
+    //...
+  }, []);
+  ```
