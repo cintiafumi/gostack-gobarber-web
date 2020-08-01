@@ -935,3 +935,46 @@ app.use('/files', express.static(uploadConfig.uploadFolder));
 app.use(rateLimiter); // deixar após o carregamento das imagens
 app.use(routes);
 ```
+
+## Finalizando listagem de agendamentos
+Aqui é somente se for a data de hoje, mostraremos o próximo agendamento.
+```tsx
+//...
+  const nextAppointment = useMemo(() => {
+    return appointments.find((appointment) =>
+      isAfter(parseISO(appointment.date), new Date()),
+    );
+  }, [appointments]);
+  //...
+            {isToday(selectedDate) && nextAppointment && (
+            <NextAppointment>
+              <strong>Agendamento a seguir</strong>
+              <div>
+                <img
+                  src={nextAppointment.user.avatar_url}
+                  alt={nextAppointment.user.name}
+                />
+                <strong>{nextAppointment.user.name}</strong>
+                <span>
+                  <FiClock />
+                  {nextAppointment.formattedHour}
+                </span>
+              </div>
+            </NextAppointment>
+          )}
+
+          <Section>
+            <strong>Manhã</strong>
+
+            {morningAppointments.length === 0 && (
+              <p>Nenhum agendamento neste período</p>
+            )}
+```
+E desabilitamos o clique em datas antigas do calendário adicionando `!modifiers.disabled`
+```tsx
+  const handleDayChange = useCallback((day: Date, modifiers: DayModifiers) => {
+    if (modifiers.available && !modifiers.disabled) {
+      setSelectedDate(day);
+    }
+  }, []);
+```
