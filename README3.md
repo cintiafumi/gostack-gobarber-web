@@ -282,3 +282,96 @@ interface User {
   avatar_url: string;
 }
 ```
+
+## Troca de avatar
+Ao invés de button, deixamos como label e input para então conseguirmos selecionar uma imagem para atualizar meu avatar.
+```tsx
+const Profile: React.FC = () => {
+  //...
+  const { user, updateUser } = useAuth();
+  //...
+  const handleAvatarChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        const data = new FormData();
+        data.append('avatar', e.target.files[0]);
+
+        api.patch('users/avatar', data).then((response) => {
+          updateUser(response.data);
+          addToast({
+            type: 'success',
+            title: 'Avatar atualizado',
+          });
+        });
+      }
+    },
+    [addToast, updateUser],
+  );
+
+  return (
+    //...
+          <AvatarInput>
+            <img src={user.avatar_url} alt={user.name} />
+
+            <label htmlFor="avatar">
+              <FiCamera />
+              <input type="file" id="avatar" onChange={handleAvatarChange} />
+            </label>
+          </AvatarInput>
+```
+
+Nos styles então
+```ts
+export const AvatarInput = styled.div`
+  //...
+  label {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    background: #ff9000;
+    border-radius: 50%;
+    right: 0;
+    bottom: 0;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    input {
+      display: none;
+    }
+```
+
+E no `auth`, adicionamos o método `updateUser`
+```tsx
+interface AuthContextData {
+  user: User;
+  signIn(credentials: SignInCredentials): Promise<void>;
+  signOut(): void;
+  updateUser(user: User): void;
+}
+
+const AuthProvider: React.FC = ({ children }) => {
+  //...
+  const updateUser = useCallback(
+    (user: User) => {
+      localStorage.setItem('@GoBarber:user', JSON.stringify(user));
+
+      setData({
+        token: data.token,
+        user,
+      });
+    },
+    [data.token],
+  );
+
+  return (
+    <AuthContext.Provider
+      value={{ user: data.user, signIn, signOut, updateUser }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+```
