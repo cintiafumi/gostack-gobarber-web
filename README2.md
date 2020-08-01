@@ -652,3 +652,50 @@ export const Appointment = styled.div`
   }
 `;
 ```
+
+## Calendário e estilizações
+Usaremos uma lib terceira para fazermos o calendário
+```sh
+yarn add react-day-picker
+```
+
+Importamos essa lib e seu estilo, e usamos dentro do nosso `Calendar`
+```tsx
+import DayPicker, { DayModifiers } from 'react-day-picker';
+import 'react-day-picker/lib/style.css';
+
+const Dashboard: React.FC = () => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const handleDayChange = useCallback((day: Date, modifiers: DayModifiers) => {
+    if (modifiers.available) {
+      setSelectedDate(day);
+    }
+  }, []);
+  //...
+        <Calendar>
+          <DayPicker
+            weekdaysShort={['D', 'S', 'T', 'Q', 'Q', 'S', 'S']}
+            fromMonth={new Date()}
+            disabledDays={[{ daysOfWeek: [0, 6] }]}
+            modifiers={{ available: { daysOfWeek: [1, 2, 3, 4, 5] } }}
+            selectedDays={selectedDate}
+            onDayClick={handleDayChange}
+            months={[
+              'Janeiro',
+              'Fevereiro',
+              'Março',
+              'Abril',
+              'Maio',
+              'Junho',
+              'Julho',
+              'Agosto',
+              'Setembro',
+              'Outubro',
+              'Novembro',
+              'Dezembro',
+            ]}
+          />
+        </Calendar>
+```
+E o estilo pegamos pronto no [link](https://gist.github.com/diego3g/325d250596e923f6b6028576fcb684da).
