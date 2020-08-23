@@ -308,3 +308,34 @@ describe('Input component', () => {
   });
 });
 ```
+
+## Testando hooks
+### Iniciando testes dos hooks
+Para testar nossos hooks, vamos instalar a lib
+```sh
+yarn add @testing-library/react-hooks react-test-renderer -D
+```
+
+Essa lib tem o método `renderHook` que recebe nosso hook e também o provider que está em volta.
+
+```tsx
+import { renderHook } from '@testing-library/react-hooks';
+import { AuthProvider, useAuth } from '../../hooks/auth';
+
+describe('Auth hook', () => {
+  it('should be able to sign in', () => {
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: AuthProvider,
+    });
+
+    result.current.signIn({
+      email: 'johndoe@example.com',
+      password: '123456',
+    });
+
+    expect(result.current.user.email).toEqual('johndoe@example.com');
+  });
+});
+```
+
+O primeiro erro que dá é que o `signIn` depende de uma chamada da nossa API.
