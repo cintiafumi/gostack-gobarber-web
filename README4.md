@@ -59,3 +59,8 @@ No `package.json` vamos configurar o coverage para que não pegue em toda a apli
     ]
   },
 ```
+
+Para rodar no terminar e gerar o coverage, paramos o `yarn test` para então rodar
+```bash
+yarn test --coverage --watchAll false
+```
