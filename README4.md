@@ -393,3 +393,93 @@ describe('Auth hook', () => {
   });
 });
 ```
+
+### Finalizando testes do hook
+Quando fazemos o `signOut`, precisamos ter um user logado, mas além disso, ao termos uma alteração de estado numa chamada de função síncrona, é melhor usar o `act` ao invés de `waitForNextUpdate`
+```tsx
+  it('should restore saved data from storage when auth inits', () => {
+    jest.spyOn(Storage.prototype, 'getItem').mockImplementation((key) => {
+      switch (key) {
+        case '@GoBarber:token':
+          return 'token-123';
+        case '@GoBarber:user':
+          return JSON.stringify({
+            id: 'user-123',
+            name: 'John Doe',
+            email: 'johndoe@example.com',
+          });
+        default:
+          return null;
+      }
+    });
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: AuthProvider,
+    });
+
+    expect(result.current.user.email).toEqual('johndoe@example.com');
+  });
+
+  it('should be able to sign out', () => {
+    jest.spyOn(Storage.prototype, 'getItem').mockImplementation((key) => {
+      switch (key) {
+        case '@GoBarber:token':
+          return 'token-123';
+        case '@GoBarber:user':
+          return JSON.stringify({
+            id: 'user-123',
+            name: 'John Doe',
+            email: 'johndoe@example.com',
+          });
+        default:
+          return null;
+      }
+    });
+
+    const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: AuthProvider,
+    });
+
+    act(() => {
+      result.current.signOut();
+    });
+
+    expect(removeItemSpy).toHaveBeenCalledTimes(2);
+    expect(result.current.user).toBeUndefined;
+  });
+
+  it('should be able to update user data', () => {
+    const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: AuthProvider,
+    });
+
+    const user = {
+      id: 'user-123',
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      avatar_url: 'image-test.jpg',
+    };
+
+    act(() => {
+      result.current.updateUser(user);
+    });
+
+    expect(setItemSpy).toHaveBeenCalledWith(
+      '@GoBarber:user',
+      JSON.stringify(user),
+    );
+
+    expect(result.current.user).toEqual(user);
+  });
+  ```
+
+Removemos uma parte do nosso hook de autenticação, pois nem vai cair nessa parte implementada.
+```tsx
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+```
