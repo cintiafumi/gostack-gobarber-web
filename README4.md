@@ -25,8 +25,8 @@ Já dá um erro, pois essa página de `SignIn` usa o `useHistory` que conseguimo
 
 Vamos usar nesse caso o `jest.mock` por fora do `describe` para que sempre funcione para todos os testes do `SignIn`. E colocamos o nome do módulo que queremos mockar. Nesse caso, o `react-router-dom`. E podemos retornar exatamente o que precisamos, que é o `useHistory`, mas como só quero que exista mas que não precise funcionar, só deixamos como um `jest.fn()`. Também falou retornar o `Link` que vai ter um `children` que tem uma tipagem de `ReactNode` que pode ser qualquer conteúdo que um componente React poderia receber.
 ```tsx
-import { render } from '@testing-library/react';
 import React from 'react';
+import { render } from '@testing-library/react';
 import SignIn from '../../pages/SignIn';
 
 jest.mock('react-router-dom', () => {
@@ -64,3 +64,43 @@ Para rodar no terminar e gerar o coverage, paramos o `yarn test` para então rod
 ```bash
 yarn test --coverage --watchAll false
 ```
+
+### Teste de login
+Queremos encontrar o input de email e senha. Usamos o `getByPlaceholderText` para capturar esses elementos. E para adicionar o texto, usamos o `fireEvent.change`, lembrando que acessamos o valor dos inputs pelo `e.target.value`. Então, precisamos colocar o objeto nesse formato para inserir o valor no input. Já o botão, iremos pegá-lo pelo `getByText` e usaremos o `fireEvent.click`.
+
+Imaginando o comportamento do login, o usuários seria direcionado para a página de `Dashboard` assim que seus dados fossem validados e o signIn fosse realizado. Então, não basta ter o `useHistory` mockado, mas ele tem que retornar uma função `push` que eu possa verificar depois que foi chamada.
+```tsx
+import React from 'react';
+import { render, fireEvent } from '@testing-library/react';
+import SignIn from '../../pages/SignIn';
+
+const mockedHistoryPush = jest.fn();
+
+jest.mock('react-router-dom', () => {
+  return {
+    useHistory: () => ({
+      push: mockedHistoryPush,
+    }),
+    Link: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
+
+describe('SignIn Page', () => {
+  it('should be able to sign in', () => {
+    const { getByPlaceholderText, getByText } = render(<SignIn />);
+
+    const emailField = getByPlaceholderText('E-mail');
+    const passwordField = getByPlaceholderText('Senha');
+    const buttonElement = getByText('Entrar');
+
+    fireEvent.change(emailField, { target: { value: 'johndoe@example.com' } });
+    fireEvent.change(passwordField, { target: { value: '123456' } });
+
+    fireEvent.click(buttonElement);
+
+    expect(mockedHistoryPush).toHaveBeenCalledWith('/dashboard');
+  });
+});
+```
+
+Ao rodar o teste, agora falhou a parte de requisição da API.
