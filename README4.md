@@ -45,3 +45,17 @@ describe('SignIn Page', () => {
 });
 ```
 E agora nosso teste rodou mostrando no console todo nosso html da página SignIn.
+
+### Gerando coverage report
+No `package.json` vamos configurar o coverage para que não pegue em toda a aplicação. Adicionamos essa parte em que vai testar todos arquivos de pages, components e hooks, mas não iremos testar o index do hooks, pois não é um arquivo necessário.
+```json
+{
+  "jest": {
+    "collectCoverageFrom": [
+      "src/pages/**/*.tsx",
+      "src/components/**/*.tsx",
+      "src/hooks/*.tsx",
+      "!src/hooks/index.tsx"
+    ]
+  },
+```
