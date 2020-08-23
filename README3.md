@@ -470,3 +470,5 @@ const handleSubmit = useCallback(
     [addToast, history],
   );
 ```
+
+Continuar em [Testes no ReactJS](README4.md)
