@@ -341,7 +341,7 @@ describe('Auth hook', () => {
 O primeiro erro que dá é que o `signIn` depende de uma chamada da nossa API.
 
 ## Criando mock da API
-Instalamos a lib
+Instalamos a lib para fazer o mock da nossa API. Como estamos usando o `axios`, usamos uma lib para ele.
 ```sh
 yarn add axios-mock-adapter -D
 ```
