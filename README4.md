@@ -65,6 +65,8 @@ Para rodar no terminar e gerar o coverage, paramos o `yarn test` para então rod
 yarn test --coverage --watchAll false
 ```
 
+## Testando autenticação
+
 ### Teste de login
 Queremos encontrar o input de email e senha. Usamos o `getByPlaceholderText` para capturar esses elementos. E para adicionar o texto, usamos o `fireEvent.change`, lembrando que acessamos o valor dos inputs pelo `e.target.value`. Então, precisamos colocar o objeto nesse formato para inserir o valor no input. Já o botão, iremos pegá-lo pelo `getByText` e usaremos o `fireEvent.click`.
 
@@ -104,3 +106,37 @@ describe('SignIn Page', () => {
 ```
 
 Ao rodar o teste, agora falhou a parte de requisição da API.
+
+### Mock do hook de autenticação
+Temos que evitar que nosso componente de SignIn faça requisição na API. Para isso, precisamos fazer o mock dessa parte também. E como estamos testando a página de SignIn e não a requisição na API, vamos separar essas responsabilidades. Essa parte do signIn será testada em outro momento.
+
+Usaremos novamente um `jest.mock` para o `useAuth`. Outra coisa que verificamos agora é que o teste falha e ao colocarmos um `console.log` na página de SignIn antes do `history.push('/dashboard')`, vemos que o `console.log` aparece depois que o teste é executado e falha. Isso aconteceu, pois nosso submit é assíncrono e tanto a validação quanto a chamada na API demoram alguns milissegundos. Para lidar com isso, usamos o `wait` que é uma função que fica tentando executar o código de dentro dele até ele passar e então ele deixa o restante do teste continuar.
+```tsx
+//...
+jest.mock('../../hooks/auth', () => {
+  return {
+    useAuth: () => ({
+      signIn: jest.fn(),
+    }),
+  };
+});
+
+describe('SignIn Page', () => {
+  it('should be able to sign in', async () => {
+    //...
+    await wait(() => {
+      expect(mockedHistoryPush).toHaveBeenCalledWith('/dashboard');
+    });
+  });
+});
+
+```
+
+Obs: O teste do coverage estava dando errado desde o início. Ao alterar a versão no package para `"react-scripts": "3.4.0",` funcionou. 🤷🏻‍♀️
+
+Adicionamos esse `script` para não ficar digitando sempre
+```json
+{
+  "scripts": {
+    "test:coverage": "react-scripts test --coverage --watchAll false",
+```
