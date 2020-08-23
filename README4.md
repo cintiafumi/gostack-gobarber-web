@@ -220,3 +220,91 @@ describe('SignIn Page', () => {
   });
 });
 ```
+
+### Testando componente de input
+Como estamos usando a lib `unform`, precisamos mockar o `useField`. Ao testar o componente de Input e damos o foco, na verdade, precisamos pegar o Container dele para saber se a borda alterou de cor. Para isso, nenhum dos métodos do render dá para pegar ele. Então, adicionamos um id no componente para conseguirmos capturá-lo no teste.
+
+```tsx
+  return (
+    <Container
+      style={containerStyle}
+      hasError={!!error}
+      isFilled={isFilled}
+      isFocused={isFocused}
+      data-testid="input-container"
+    >
+```
+Toda alteração no state é uma função assíncrona. Então, usaremos o `wait` e o `fireEvent` para capturar o `focus`, o `blur` e quando o input estiver preenchido.
+```tsx
+import React from 'react';
+import { fireEvent, render, wait } from '@testing-library/react';
+
+import Input from '../../components/Input';
+
+jest.mock('@unform/core', () => {
+  return {
+    useField() {
+      return {
+        fieldName: 'email',
+        defaultValue: '',
+        error: '',
+        registerField: jest.fn(),
+      };
+    },
+  };
+});
+
+describe('Input component', () => {
+  it('should be able to render an input', () => {
+    const { getByPlaceholderText } = render(
+      <Input name="email" placeholder="E-mail" />,
+    );
+
+    expect(getByPlaceholderText('E-mail')).toBeTruthy();
+  });
+
+  it('should render highlight on input focus', async () => {
+    const { getByPlaceholderText, getByTestId } = render(
+      <Input name="email" placeholder="E-mail" />,
+    );
+
+    const inputElement = getByPlaceholderText('E-mail');
+    const containerElement = getByTestId('input-container');
+
+    fireEvent.focus(inputElement);
+
+    await wait(() => {
+      expect(containerElement).toHaveStyle('border-color: #ff9000;');
+      expect(containerElement).toHaveStyle('color: #ff9000;');
+    });
+
+    fireEvent.blur(inputElement);
+
+    await wait(() => {
+      expect(containerElement).not.toHaveStyle('border-color: #ff9000;');
+      expect(containerElement).not.toHaveStyle('color: #ff9000;');
+    });
+  });
+
+  it('should keep input border highlight when input is filled', async () => {
+    const { getByPlaceholderText, getByTestId } = render(
+      <Input name="email" placeholder="E-mail" />,
+    );
+
+    const inputElement = getByPlaceholderText('E-mail');
+    const containerElement = getByTestId('input-container');
+
+    fireEvent.change(inputElement, {
+      target: {
+        value: 'johndoe@example.com',
+      },
+    });
+
+    fireEvent.blur(inputElement);
+
+    await wait(() => {
+      expect(containerElement).toHaveStyle('color: #ff9000;');
+    });
+  });
+});
+```
