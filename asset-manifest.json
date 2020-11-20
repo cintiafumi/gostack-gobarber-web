@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.js": "/gostack-gobarber-web/static/js/main.43df5149.chunk.js",
+    "main.js.map": "/gostack-gobarber-web/static/js/main.43df5149.chunk.js.map",
+    "runtime-main.js": "/gostack-gobarber-web/static/js/runtime-main.4242b2a8.js",
+    "runtime-main.js.map": "/gostack-gobarber-web/static/js/runtime-main.4242b2a8.js.map",
+    "static/css/2.c6231af7.chunk.css": "/gostack-gobarber-web/static/css/2.c6231af7.chunk.css",
+    "static/js/2.0a20cf0a.chunk.js": "/gostack-gobarber-web/static/js/2.0a20cf0a.chunk.js",
+    "static/js/2.0a20cf0a.chunk.js.map": "/gostack-gobarber-web/static/js/2.0a20cf0a.chunk.js.map",
+    "index.html": "/gostack-gobarber-web/index.html",
+    "precache-manifest.e8c49ad37f8e9adb6629c4dde9662759.js": "/gostack-gobarber-web/precache-manifest.e8c49ad37f8e9adb6629c4dde9662759.js",
+    "service-worker.js": "/gostack-gobarber-web/service-worker.js",
+    "static/css/2.c6231af7.chunk.css.map": "/gostack-gobarber-web/static/css/2.c6231af7.chunk.css.map",
+    "static/js/2.0a20cf0a.chunk.js.LICENSE.txt": "/gostack-gobarber-web/static/js/2.0a20cf0a.chunk.js.LICENSE.txt",
+    "static/media/logo.svg": "/gostack-gobarber-web/static/media/logo.a49b07ec.svg",
+    "static/media/sign-in-background.png": "/gostack-gobarber-web/static/media/sign-in-background.6eac314f.png",
+    "static/media/sign-up-background.png": "/gostack-gobarber-web/static/media/sign-up-background.c4d8f988.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.4242b2a8.js",
+    "static/css/2.c6231af7.chunk.css",
+    "static/js/2.0a20cf0a.chunk.js",
+    "static/js/main.43df5149.chunk.js"
+  ]
+}
